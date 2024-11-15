@@ -33,6 +33,7 @@
       <tr>
         <td colspan="2" class="text-center">
           <button type="button" class="btn btn-primary" onclick="submitForm()">查詢</button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm()">清除</button>
         </td>
       </tr>
     </tbody>
@@ -98,6 +99,13 @@
         }
       })
       .catch(error => console.error('Error:', error));
+  }
+
+  function clearForm() {
+    document.getElementById('userId').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('results').innerHTML = '<p>沒有查詢結果。</p>';
   }
 </script>
 {% endblock %}
