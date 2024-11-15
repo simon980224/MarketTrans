@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-def getData(userId=None, transAmount=None, transDate=None):
+def getData(userId=None, startDate=None, endDate=None):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect('/Users/chenyaoxuan/Desktop/MarketRecord.db')
@@ -13,14 +13,14 @@ def getData(userId=None, transAmount=None, transDate=None):
 
         # 增加條件過濾
         if userId:
-            sql += ' AND User_Id = ?'
-            parameters.append(userId)
-        if transAmount:
-            sql += ' AND Trans_Amount = ?'
-            parameters.append(transAmount)
-        if transDate:
-            sql += ' AND Trans_Date = ?'
-            parameters.append(transDate)
+            sql += ' AND User_Id LIKE ?'
+            parameters.append(f'%{userId}%')
+        if startDate and endDate:
+            sql += ' AND Trans_Date BETWEEN ? AND ?'
+            parameters.append(startDate)
+            parameters.append(endDate)
+
+        sql += ' ORDER BY Trans_Date DESC'
 
         # 執行查詢
         cursor.execute(sql, parameters)

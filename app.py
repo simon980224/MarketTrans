@@ -15,16 +15,14 @@ def TransRecord():
 def queryTransRecord():
     if request.method == 'POST':
         userId = request.form.get('userId', '').strip() or None
-        transAmount = request.form.get('transAmount', '').strip() or None
-        transDate = request.form.get('transDate', '').strip() or None
+        startDate = request.form.get('startDate', '').strip() or None
+        endDate = request.form.get('endDate', '').strip() or None
 
         # 確保 getData 函數被正確調用
-        TransRecord = TransRecordService.getData(userId, transAmount, transDate)
+        TransRecord = TransRecordService.getData(userId, startDate, endDate)
 
         # 將 DataFrame 轉換為字典列表
         records = TransRecord.to_dict(orient='records') if TransRecord is not None else []
-
-        print('TransRecord:', records)
 
         return render_template('TransRecord.html', records=records)
 

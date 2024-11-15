@@ -7,7 +7,7 @@
   <form action="/queryTransRecord" method="POST">
     <thead class="thead-light">
       <tr>
-        <th colspan="2">查詢條件</th>
+        <th colspan="2">查詢</th>
       </tr>
     </thead>
     <tbody>
@@ -18,15 +18,15 @@
         </td>
       </tr>
       <tr>
-        <td><label for="transAmount" class="form-label">回款金額</label></td>
+        <td><label for="startDate" class="form-label">起始日期</label></td>
         <td>
-          <input type="number" class="form-control" id="transAmount" name="transAmount" />
+          <input type="date" class="form-control" id="startDate" name="startDate" />
         </td>
       </tr>
       <tr>
-        <td><label for="transDate" class="form-label">回款日期</label></td>
+        <td><label for="endDate" class="form-label">結束日期</label></td>
         <td>
-          <input type="date" class="form-control" id="transDate" name="transDate" />
+          <input type="date" class="form-control" id="endDate" name="endDate" />
         </td>
       </tr>
       <tr>
@@ -43,6 +43,7 @@
 <table class="table table-striped">
   <thead>
     <tr>
+      <th>交易編號</th>
       <th>用戶名稱</th>
       <th>回款金額</th>
       <th>回款日期</th>
@@ -51,6 +52,7 @@
   <tbody>
     {% for record in records %}
     <tr>
+      <td>{{ record['Trans_Id'] }}</td>
       <td>{{ record['User_Id'] }}</td>
       <td>{{ record['Trans_Amount'] }}</td>
       <td>{{ record['Trans_Date'] }}</td>
