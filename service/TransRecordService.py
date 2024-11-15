@@ -41,7 +41,7 @@ def getData(userId=None, startDate=None, endDate=None):
         if conn:
             conn.close()
 
-def getTotalAmount(userId=None):
+def getTotalAmount(userId=None,startDate=None, endDate=None):
     total_amount = 0
     try:
         # 連接到 SQLite 資料庫
@@ -55,6 +55,10 @@ def getTotalAmount(userId=None):
         if userId:
             sql += ' AND User_Id LIKE ?'
             parameters.append(f'%{userId}%')
+        if startDate and endDate:
+            sql += ' AND Trans_Date BETWEEN ? AND ?'
+            parameters.append(startDate)
+            parameters.append(endDate)
 
         cursor.execute(sql, parameters)
         result = cursor.fetchone()

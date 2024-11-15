@@ -19,7 +19,7 @@ def query():
     endDate = data.get('endDate', '').strip() or None
 
     TransRecord = TransRecordService.getData(userId, startDate, endDate)
-    totalAmount = TransRecordService.getTotalAmount(userId) if TransRecord is not None else 0
+    totalAmount = TransRecordService.getTotalAmount(userId, startDate, endDate) if TransRecord is not None else 0
 
     records = TransRecord.to_dict(orient='records') if TransRecord is not None else []
 
