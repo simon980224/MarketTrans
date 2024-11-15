@@ -4,7 +4,8 @@
 
 <!-- 查詢表格 -->
 <table class="table table-bordered">
-  <form action="/queryTransRecord" method="POST">
+  <!-- 移除action和method屬性 -->
+  <form id="queryForm">
     <thead class="thead-light">
       <tr>
         <th colspan="2">查詢</th>
@@ -31,7 +32,7 @@
       </tr>
       <tr>
         <td colspan="2" class="text-center">
-          <button type="submit" class="btn btn-primary">查詢</button>
+          <button type="button" class="btn btn-primary" onclick="submitForm()">查詢</button>
         </td>
       </tr>
     </tbody>
@@ -39,28 +40,62 @@
 </table>
 
 <!-- 查詢結果表格 -->
-{% if records %}
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>交易編號</th>
-      <th>用戶名稱</th>
-      <th>回款金額</th>
-      <th>回款日期</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for record in records %}
-    <tr>
-      <td>{{ record['Trans_Id'] }}</td>
-      <td>{{ record['User_Id'] }}</td>
-      <td>{{ record['Trans_Amount'] }}</td>
-      <td>{{ record['Trans_Date'] }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>沒有查詢結果。</p>
-{% endif %}
+<div id="results">
+  {% if records %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>交易編號</th>
+        <th>用戶名稱</th>
+        <th>回款金額</th>
+        <th>回款日期</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in records %}
+      <tr>
+        <td>{{ record['Trans_Id'] }}</td>
+        <td>{{ record['User_Id'] }}</td>
+        <td>{{ record['Trans_Amount'] }}</td>
+        <td>{{ record['Trans_Date'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>沒有查詢結果。</p>
+  {% endif %}
+</div>
+
+<script>
+  function submitForm() {
+    const userId = document.getElementById('userId').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    fetch('/queryTransRecord', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId, startDate, endDate })
+    })
+      .then(response => response.json())
+      .then(data => {
+        // 處理返回的數據並更新頁面
+        const resultsDiv = document.getElementById('results');
+        if (data.records.length > 0) {
+          let table = '<table class="table table-striped"><thead><tr><th>交易編號</th><th>用戶名稱</th><th>回款金額</th><th>回款日期</th></tr></thead><tbody>';
+          data.records.forEach(record => {
+            table += `<tr><td>${record.Trans_Id}</td><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td></tr>`;
+          });
+          table += '</tbody></table>';
+          resultsDiv.innerHTML = table;
+        } else {
+          resultsDiv.innerHTML = '<p>沒有查詢結果。</p>';
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+</script>
 {% endblock %}

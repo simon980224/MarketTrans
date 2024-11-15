@@ -29,10 +29,7 @@ def getData(userId=None, startDate=None, endDate=None):
         # 獲取列名稱
         column_names = [description[0] for description in cursor.description]
 
-        # 將結果轉換為 DataFrame
-        df = pd.DataFrame(results, columns=column_names)
-
-        return df
+        return pd.DataFrame(results, columns=column_names)
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
