@@ -18,13 +18,16 @@ def queryTransRecord():
     startDate = data.get('startDate', '').strip() or None
     endDate = data.get('endDate', '').strip() or None
 
-    # 確保 getData 函數被正確調用
+    # 獲取交易記錄
     TransRecord = TransRecordService.getData(userId, startDate, endDate)
+
+    # 獲取總金額
+    totalAmount = TransRecordService.getTotalAmount(userId) if TransRecord is not None else 0
 
     # 將 DataFrame 轉換為字典列表
     records = TransRecord.to_dict(orient='records') if TransRecord is not None else []
 
-    return jsonify(records=records)
+    return jsonify(records=records, totalAmount=totalAmount)
 
 if __name__ == '__main__':
     app.run(debug=True)
