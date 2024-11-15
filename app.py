@@ -19,11 +19,10 @@ def query():
     endDate = data.get('endDate', '').strip() or None
 
     TransRecord = TransRecordService.getData(userId, startDate, endDate)
-    totalAmount = TransRecordService.getTotalAmount(userId, startDate, endDate) if TransRecord is not None else 0
 
     records = TransRecord.to_dict(orient='records') if TransRecord is not None else []
 
-    return jsonify(records=records, totalAmount=totalAmount)
+    return jsonify(records=records)
 
 if __name__ == '__main__':
     app.run(debug=True)
