@@ -5,11 +5,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html',title='首頁')
 
 @app.route('/TransRecord', methods=['GET', 'POST'])
 def TransRecord():
-    return render_template('TransRecord.html')
+    return render_template('TransRecord.html',title='回款明細')
 
 @app.route('/TransRecord/query', methods=['POST'])
 def query():
