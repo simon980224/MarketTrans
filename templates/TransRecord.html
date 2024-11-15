@@ -75,7 +75,7 @@
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/queryTransRecord', {
+    fetch('/TransRecord/query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
