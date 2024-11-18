@@ -108,10 +108,6 @@
 </table>
 
 <script>
-  function showAddModal() {
-    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
-    addModal.show();
-  }
 
   function queryForm() {
     const userId = document.getElementById('userId').value;
@@ -150,6 +146,18 @@
     document.getElementById('results').innerHTML = '<p>沒有查詢結果。</p>';
   }
 
+  function showAddModal() {
+    document.getElementById('addForm').reset();
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  function hideAddModal() {
+    document.getElementById('addForm').reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
+  }
+
   function save() {
     const newUserId = document.getElementById('newUserId').value;
     const newAmount = document.getElementById('newAmount').value;
@@ -166,15 +174,12 @@
         .then(response => response.json())
         .then(data => {
           console.log('Success:', data);
+          hideAddModal();
+          queryForm();
         })
         .catch((error) => {
           console.error('Error:', error);
         });
-
-      document.getElementById('addForm').reset();
-      const addModalElement = document.getElementById('addModal');
-      const modalInstance = bootstrap.Modal.getInstance(addModalElement);
-      modalInstance.hide();
     } else {
       alert('請填寫所有欄位！');
     }
