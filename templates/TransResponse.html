@@ -97,7 +97,12 @@
                   <label for="newDate" class="form-label">回款日期</label>
                   <input type="date" class="form-control" id="newDate" name="newDate" required>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="save()">提交</button>
+                <div class="modal-footer">
+                  <!-- 取消按鈕 -->
+                  <button type="button" class="btn btn-secondary" onclick="hideAddModal()">取消</button>
+                  <!-- 提交按鈕 -->
+                  <button type="submit" class="btn btn-primary" form="addForm">提交</button>
+                </div>
               </form>
             </div>
           </div>
@@ -110,7 +115,6 @@
 <script>
 
   function queryForm() {
-    clearForm();
     showLoading('查詢中','');
     const userId = document.getElementById('userId').value;
     const startDate = document.getElementById('startDate').value;
@@ -150,6 +154,10 @@
 
   function showAddModal() {
     document.getElementById('addForm').reset();
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('newDate').value = today;
+
     const addModal = new bootstrap.Modal(document.getElementById('addModal'));
     addModal.show();
   }
