@@ -136,7 +136,6 @@
           resultsDiv.innerHTML = '<p>沒有查詢結果。</p>';
         }
       })
-      .catch(error => console.error('Error:', error));
   }
 
   function clearForm() {
@@ -171,17 +170,16 @@
         },
         body: JSON.stringify({ newUserId, newAmount, newDate })
       })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Success:', data);
-          hideAddModal();
-          queryForm();
-        })
-        .catch((error) => {
-          console.error('Error:', error);
+        .then(response => {
+          if (response.ok) {
+            showSuccess('測試成功', '記錄已成功添加');
+            document.getElementById('addForm').reset();
+          } else {
+            showError('測試失敗', '無法添加記錄');
+          }
         });
     } else {
-      alert('請填寫所有欄位！');
+      showWarning('請輸入完整資料', '所有欄位均為必填');
     }
   }
 </script>

@@ -27,18 +27,16 @@ def query():
 @app.route('/TransResponse/append', methods=['POST'])
 def append():
     data = request.json
-    print('data:', data)
-    
-    # 假設這裡有一些處理邏輯，比如將數據插入到數據庫中
+    userId = data.get('newUserId', '').strip() or None
+    amount = data.get('newAmount', '').strip() or None
+    date = data.get('newDate', '').strip() or None
+
     try:
-        # TODO: 實現數據插入或其他邏輯
-        # 例如: TransResponseService.addRecord(data['newUserId'], data['newAmount'], data['newDate'])
-        
-        # 返回成功響應
-        return jsonify({'status': 'success', 'message': 'Record added successfully'})
-    except Exception as e:
-        # 返回失敗響應
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        TransResponseService.addRecord(userId, amount, date)
+        return '',200
+    
+    except Exception:
+        return '',500
 
 if __name__ == '__main__':
     app.run(debug=True)
