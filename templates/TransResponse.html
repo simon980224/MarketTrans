@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-4">回款明細</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>回款明細</h1>
+  <button type="button" class="btn btn-success" onclick="showAddModal()">新增</button>
+</div>
 
 <!-- 查詢表格 -->
 <table class="table table-bordered">
@@ -31,7 +34,7 @@
       </tr>
       <tr>
         <td colspan="2" class="text-center">
-          <button type="button" class="btn btn-primary" onclick="submitForm()">查詢</button>
+          <button type="button" class="btn btn-primary" onclick="queryForm()">查詢</button>
           <button type="button" class="btn btn-secondary" onclick="clearForm()">清除</button>
         </td>
       </tr>
@@ -68,13 +71,54 @@
   {% endif %}
 </div>
 
+<!-- 新增項目模態框 -->
+<table id="addModalTable">
+  <tr>
+    <td>
+      <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addModalLabel">新增項目</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <!-- 模態框內容 -->
+              <form id="addForm">
+                <div class="mb-3">
+                  <label for="newUserId" class="form-label">用戶名稱</label>
+                  <input type="text" class="form-control" id="newUserId" name="newUserId" required>
+                </div>
+                <div class="mb-3">
+                  <label for="newAmount" class="form-label">回款金額</label>
+                  <input type="number" class="form-control" id="newAmount" name="newAmount" required>
+                </div>
+                <div class="mb-3">
+                  <label for="newDate" class="form-label">回款日期</label>
+                  <input type="date" class="form-control" id="newDate" name="newDate" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="save()">提交</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+
 <script>
-  function submitForm() {
+  function showAddModal() {
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  function queryForm() {
     const userId = document.getElementById('userId').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/TransRecord/query', {
+    fetch('/TransResponse/query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -104,6 +148,36 @@
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
     document.getElementById('results').innerHTML = '<p>沒有查詢結果。</p>';
+  }
+
+  function save() {
+    const newUserId = document.getElementById('newUserId').value;
+    const newAmount = document.getElementById('newAmount').value;
+    const newDate = document.getElementById('newDate').value;
+
+    if (newUserId && newAmount && newDate) {
+      fetch('/TransResponse/append', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newUserId, newAmount, newDate })
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+
+      document.getElementById('addForm').reset();
+      const addModalElement = document.getElementById('addModal');
+      const modalInstance = bootstrap.Modal.getInstance(addModalElement);
+      modalInstance.hide();
+    } else {
+      alert('請填寫所有欄位！');
+    }
   }
 </script>
 {% endblock %}

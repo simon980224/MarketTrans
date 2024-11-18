@@ -24,15 +24,15 @@ def getData(userId=None, startDate=None, endDate=None):
                     *,
                     SUM(Trans_Amount) OVER() AS Total_Amount
                 FROM 
-                    TransRecord
+                    TransResponse
                 WHERE 
                     1=1
         '''
         parameters = []
 
         if userId:
-            sql += ' AND User_Id = ?'
-            parameters.append(userId)
+            sql += ' AND User_Id LIKE ?'
+            parameters.append(f"%{userId}%")
         if startDate and endDate:
             sql += ' AND Trans_Date BETWEEN ? AND ?'
             parameters.append(startDate)
@@ -58,3 +58,5 @@ def getData(userId=None, startDate=None, endDate=None):
             cursor.close()
         if conn:
             conn.close()
+
+# print(getData(None, None, None))
