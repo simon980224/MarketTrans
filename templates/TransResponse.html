@@ -110,6 +110,8 @@
 <script>
 
   function queryForm() {
+    clearForm();
+    showLoading('查詢中','');
     const userId = document.getElementById('userId').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -123,6 +125,7 @@
     })
       .then(response => response.json())
       .then(data => {
+        closeLoading();
         const resultsDiv = document.getElementById('results');
         if (data.records.length > 0) {
           let content = `<h1>總金額: <span id="totalAmount">${data.records[0].Total_Amount}</span></h1>`;
@@ -172,10 +175,10 @@
       })
         .then(response => {
           if (response.ok) {
-            showSuccess('測試成功', '記錄已成功添加');
+            showSuccess('成功', '已新增明細');
             document.getElementById('addForm').reset();
           } else {
-            showError('測試失敗', '無法添加記錄');
+            showError('失敗', '無法新增明細');
           }
         });
     } else {
