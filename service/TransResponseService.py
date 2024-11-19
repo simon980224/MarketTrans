@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 # 統一管理資料庫位置
-DATABASE_PATH = '/Users/chenyaoxuan/Desktop/MarketRecord.db'
+DATABASE_PATH = 'Transaction.db'
 
 def getData(userId=None, startDate=None, endDate=None):
     try:
