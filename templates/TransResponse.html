@@ -15,21 +15,28 @@
     </thead>
     <tbody>
       <tr>
-        <td><label for="userId" class="form-label">用戶名稱</label></td>
         <td>
-          <input type="text" class="form-control" id="userId" name="userId" />
+          <label class="form-label">用戶名稱</label>
+        </td>
+        <td>
+          <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
+          <datalist id="user_data">
+            {% for user in user_data %}
+            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
+            {% endfor %}
+          </datalist>
         </td>
       </tr>
       <tr>
-        <td><label for="startDate" class="form-label">起始日期</label></td>
         <td>
-          <input type="date" class="form-control" id="startDate" name="startDate" />
+          <label class="form-label">日期區間</label>
         </td>
-      </tr>
-      <tr>
-        <td><label for="endDate" class="form-label">結束日期</label></td>
         <td>
-          <input type="date" class="form-control" id="endDate" name="endDate" />
+          <div class="d-flex align-items-center">
+            <input type="date" class="form-control" id="startDate" name="startDate" />
+            <span>~</span>
+            <input type="date" class="form-control" id="endDate" name="endDate" />
+          </div>
         </td>
       </tr>
       <tr>
@@ -56,12 +63,12 @@
       </tr>
     </thead>
     <tbody>
-      {% for record in records %}
+      {% for trans_response in trans_response_data %}
       <tr>
-        <td>{{ record['Trans_Id'] }}</td>
-        <td>{{ record['User_Id'] }}</td>
-        <td>{{ record['Trans_Amount'] }}</td>
-        <td>{{ record['Trans_Date'] }}</td>
+        <td>{{ trans_response['Trans_Id'] }}</td>
+        <td>{{ trans_response['User_Id'] }}</td>
+        <td>{{ trans_response['Trans_Amount'] }}</td>
+        <td>{{ trans_response['Trans_Date'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -101,7 +108,7 @@
                   <!-- 取消按鈕 -->
                   <button type="button" class="btn btn-secondary" onclick="hideAddModal()">取消</button>
                   <!-- 提交按鈕 -->
-                  <button type="submit" class="btn btn-primary" form="addForm">提交</button>
+                  <button type="submit" class="btn btn-primary" onclick="save(event)" form="addForm">提交</button>
                 </div>
               </form>
             </div>
@@ -113,9 +120,19 @@
 </table>
 
 <script>
+  // 當 DOM 完全加載後，呼叫 init 函數
+  document.addEventListener('DOMContentLoaded', init);
+
+  // 初始化函數
+  function init() {
+    const today = new Date().toISOString().split('T')[0];
+    // 設置查詢表單的日期欄位預設為今天
+    document.getElementById('startDate').value = today;
+    document.getElementById('endDate').value = today;
+  }
 
   function queryForm() {
-    showLoading('查詢中','');
+    showLoading('查詢中', '');
     const userId = document.getElementById('userId').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -131,10 +148,10 @@
       .then(data => {
         closeLoading();
         const resultsDiv = document.getElementById('results');
-        if (data.records.length > 0) {
-          let content = `<h1>總金額: <span id="totalAmount">${data.records[0].Total_Amount}</span></h1>`;
+        if (data.trans_response_data.length > 0) {
+          let content = `<h1>總金額: <span id="totalAmount">${data.trans_response_data[0].Total_Amount}</span></h1>`;
           content += '<table class="table table-striped"><thead><tr><th>交易編號</th><th>用戶名稱</th><th>回款金額</th><th>回款日期</th></tr></thead><tbody>';
-          data.records.forEach(record => {
+          data.trans_response_data.forEach(record => {
             content += `<tr><td>${record.Trans_Id}</td><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td></tr>`;
           });
           content += '</tbody></table>';
@@ -147,8 +164,9 @@
 
   function clearForm() {
     document.getElementById('userId').value = '';
-    document.getElementById('startDate').value = '';
-    document.getElementById('endDate').value = '';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').value = today;
+    document.getElementById('endDate').value = today;
     document.getElementById('results').innerHTML = '<p>沒有查詢結果。</p>';
   }
 
@@ -168,11 +186,19 @@
     addModal.hide();
   }
 
-  function save() {
+  function clearAddForm() {
+    document.getElementById('newUserId').value = '';
+    document.getElementById('newAmount').value = '';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('newDate').value = today;
+  }
+
+  function save(event) {
+    event.preventDefault(); // 阻止默認的表單提交行為
+
     const newUserId = document.getElementById('newUserId').value;
     const newAmount = document.getElementById('newAmount').value;
     const newDate = document.getElementById('newDate').value;
-
     if (newUserId && newAmount && newDate) {
       fetch('/TransResponse/append', {
         method: 'POST',
@@ -181,16 +207,17 @@
         },
         body: JSON.stringify({ newUserId, newAmount, newDate })
       })
-        .then(response => {
-          if (response.ok) {
-            showSuccess('成功', '已新增明細');
-            document.getElementById('addForm').reset();
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showSuccess('成功', data.message);
+            clearAddForm();
           } else {
-            showError('失敗', '無法新增明細');
+            showError('失敗', data.message);
           }
         });
     } else {
-      showWarning('請輸入完整資料', '所有欄位均為必填');
+      showWarning('警告', '請填寫完整資料');
     }
   }
 </script>

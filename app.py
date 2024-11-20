@@ -9,7 +9,8 @@ def index():
 
 @app.route('/TransResponse', methods=['GET', 'POST'])
 def TransResponse():
-    return render_template('TransResponse.html', title='回款明細')
+    user_data = TransResponseService.getUserData()
+    return render_template('TransResponse.html', title='回款明細', user_data=user_data)
 
 @app.route('/TransResponse/query', methods=['POST'])
 def query():
@@ -18,11 +19,8 @@ def query():
     startDate = data.get('startDate', '').strip() or None
     endDate = data.get('endDate', '').strip() or None
 
-    TransResponse = TransResponseService.getData(userId, startDate, endDate)
-
-    records = TransResponse.to_dict(orient='records') if TransResponse is not None else []
-
-    return jsonify(records=records)
+    trans_response_data = TransResponseService.getData(userId, startDate, endDate)
+    return jsonify(trans_response_data=trans_response_data)
 
 @app.route('/TransResponse/append', methods=['POST'])
 def append():
@@ -33,10 +31,11 @@ def append():
 
     try:
         TransResponseService.addRecord(userId, amount, date)
-        return '',200
+        # raise Exception('測試用例: 新增失敗')
+        return jsonify(success=True,message='明細新增成功'), 200
     
-    except Exception:
-        return '',500
+    except Exception as e:
+        return jsonify(success=False, message=str(e)), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

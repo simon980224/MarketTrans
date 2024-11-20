@@ -1,5 +1,4 @@
 import sqlite3
-import pandas as pd
 from datetime import datetime
 
 # 統一管理資料庫位置
@@ -47,10 +46,11 @@ def getData(userId=None, startDate=None, endDate=None):
 
         column_names = [description[0] for description in cursor.description]
 
-        return pd.DataFrame(results, columns=column_names)
+        return [dict(zip(column_names, row)) for row in results]
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
+        return []
 
     finally:
         if cursor:
@@ -68,7 +68,7 @@ def addRecord(userId, amount, date):
             INSERT INTO TransResponse (Trans_Id, User_Id, Trans_Amount, Trans_Date)
             VALUES (?, ?, ?, ?)
         '''
-        cursor.execute(sql, (get_next_trans_id(), userId, amount, date))
+        cursor.execute(sql, (getNewTransId(), userId, amount, date))
         
         conn.commit()
 
@@ -83,7 +83,7 @@ def addRecord(userId, amount, date):
         if conn:
             conn.close()
 
-def get_next_trans_id():
+def getNewTransId():
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
@@ -126,3 +126,22 @@ def get_next_trans_id():
             cursor.close()
         if conn:
             conn.close()
+
+def getUserData():
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    sql = '''
+        SELECT 
+            *
+        FROM User
+    '''
+
+    cursor.execute(sql)
+    results = cursor.fetchall()
+
+    column_names = [description[0] for description in cursor.description]
+
+    return [dict(zip(column_names, row)) for row in results]
+
+
