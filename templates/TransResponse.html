@@ -2,7 +2,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1>回款明細</h1>
-  <button type="button" class="btn btn-success" onclick="showAddModal()">新增</button>
+  <button type="button" class="btn btn-success btn-lg" onclick="showAddModal()">新增</button>
 </div>
 
 <!-- 查詢表格 -->
@@ -41,8 +41,8 @@
       </tr>
       <tr>
         <td colspan="2" class="text-center">
-          <button type="button" class="btn btn-primary" onclick="queryForm()">查詢</button>
-          <button type="button" class="btn btn-secondary" onclick="clearForm()">清除</button>
+          <button type="button" class="btn btn-primary btn-lg" onclick="queryForm()">查詢</button>
+          <button type="button" class="btn btn-secondary btn-lg" onclick="clearForm()">清除</button>
         </td>
       </tr>
     </tbody>
@@ -51,8 +51,11 @@
 
 <!-- 查詢結果表格 -->
 <div id="results">
-  {% if records %}
-  <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
+  {% if trans_response_data %}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
+    <button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button>
+  </div>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -105,10 +108,10 @@
                   <input type="date" class="form-control" id="newDate" name="newDate" required>
                 </div>
                 <div class="modal-footer">
-                  <!-- 取消按鈕 -->
-                  <button type="button" class="btn btn-secondary" onclick="hideAddModal()">取消</button>
                   <!-- 提交按鈕 -->
                   <button type="submit" class="btn btn-primary" onclick="save(event)" form="addForm">提交</button>
+                  <!-- 取消按鈕 -->
+                  <button type="button" class="btn btn-secondary" onclick="hideAddModal()">取消</button>
                 </div>
               </form>
             </div>
@@ -127,8 +130,8 @@
   function init() {
     const today = new Date().toISOString().split('T')[0];
     // 設置查詢表單的日期欄位預設為今天
-    document.getElementById('startDate').value = today;
-    document.getElementById('endDate').value = today;
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
   }
 
   function queryForm() {
@@ -149,7 +152,7 @@
         closeLoading();
         const resultsDiv = document.getElementById('results');
         if (data.trans_response_data.length > 0) {
-          let content = `<h1>總金額: <span id="totalAmount">${data.trans_response_data[0].Total_Amount}</span></h1>`;
+          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.trans_response_data[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
           content += '<table class="table table-striped"><thead><tr><th>交易編號</th><th>用戶名稱</th><th>回款金額</th><th>回款日期</th></tr></thead><tbody>';
           data.trans_response_data.forEach(record => {
             content += `<tr><td>${record.Trans_Id}</td><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td></tr>`;
@@ -165,8 +168,8 @@
   function clearForm() {
     document.getElementById('userId').value = '';
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('startDate').value = today;
-    document.getElementById('endDate').value = today;
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
     document.getElementById('results').innerHTML = '<p>沒有查詢結果。</p>';
   }
 
@@ -217,8 +220,40 @@
           }
         });
     } else {
-      showWarning('警告', '請填寫完整資料');
+      showWarning('提示', '請填寫完整資料');
     }
   }
+
+  function exportForm() {
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.innerHTML.includes('沒有查詢結果。')) {
+      showWarning('提示', '沒有可匯出資料');
+      return;
+    }
+
+    const userId = document.getElementById('userId').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    fetch('/TransResponse/export', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId, startDate, endDate })
+    })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'TransResponse.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      })
+      .catch(error => console.error('Error exporting data:', error));
+  }
+
 </script>
 {% endblock %}

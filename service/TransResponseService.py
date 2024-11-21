@@ -1,5 +1,5 @@
-import sqlite3
 from datetime import datetime
+import sqlite3
 
 # 統一管理資料庫位置
 DATABASE_PATH = 'Transaction.db'
@@ -115,8 +115,8 @@ def getNewTransId():
             # 如果沒有當天的交易，從1開始
             next_number = 1
 
-        # 返回新的交易編號
-        return f"{date_part}_{next_number:03}"
+        # 返回新的交易編號，並在前面加上 "req"
+        return f"req_{date_part}_{next_number:03}"
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
