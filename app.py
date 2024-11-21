@@ -77,5 +77,10 @@ def export():
                      download_name='TransResponse.xlsx', 
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
+@app.route('/User', methods=['GET', 'POST'])
+def User():
+    user_data = TransResponseService.getUserData()
+    return render_template('User.html', title='用戶管理', user_data=user_data)
+
 if __name__ == '__main__':
     app.run(debug=True)
