@@ -199,9 +199,10 @@
   function save(event) {
     event.preventDefault(); // 阻止默認的表單提交行為
 
-    const newUserId = document.getElementById('newUserId').value;
+    const newUserId = document.getElementById('newUserId').value.toUpperCase();
     const newAmount = document.getElementById('newAmount').value;
     const newDate = document.getElementById('newDate').value;
+
     if (newUserId && newAmount && newDate) {
       fetch('/TransResponse/append', {
         method: 'POST',

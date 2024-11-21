@@ -58,6 +58,29 @@ def getData(userId=None, startDate=None, endDate=None):
         if conn:
             conn.close()
 
+def checkUserExists(userId):
+    try:
+        # 連接到 SQLite 資料庫
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT User_Id FROM User WHERE User_Id = ?
+        """, (userId,))
+        result = cursor.fetchone()
+
+        return result is not None
+
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 def addRecord(userId, amount, date):
     try:
         # 連接到 SQLite 資料庫
@@ -143,5 +166,4 @@ def getUserData():
     column_names = [description[0] for description in cursor.description]
 
     return [dict(zip(column_names, row)) for row in results]
-
 

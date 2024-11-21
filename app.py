@@ -33,10 +33,12 @@ def append():
     amount = data.get('newAmount', '').strip() or None
     date = data.get('newDate', '').strip() or None
 
+    if not TransResponseService.checkUserExists(userId):
+        return jsonify(success=False, message='用戶不存在'), 400
+
     try:
         TransResponseService.addRecord(userId, amount, date)
-        # raise Exception('測試用例: 新增失敗')
-        return jsonify(success=True,message='明細新增成功'), 200
+        return jsonify(success=True, message='新增成功'), 200
     
     except Exception as e:
         return jsonify(success=False, message=str(e)), 400
