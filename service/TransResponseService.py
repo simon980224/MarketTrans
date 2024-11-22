@@ -15,7 +15,8 @@ def getData(userId=None, startDate=None, endDate=None):
                 Trans_Id, 
                 User_Id, 
                 Trans_Amount, 
-                Trans_Date, 
+                Trans_Date,
+                Remark, 
                 Total_Amount
             FROM (
                 SELECT 
@@ -81,17 +82,17 @@ def checkUserExists(userId):
         if conn:
             conn.close()
 
-def addRecord(userId, amount, date):
+def addRecord(userId, amount, date,remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
 
         sql = '''
-            INSERT INTO TransResponse (Trans_Id, User_Id, Trans_Amount, Trans_Date)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO TransResponse (Trans_Id, User_Id, Trans_Amount, Trans_Date,Remark)
+            VALUES (?, ?, ?, ?,?)
         '''
-        cursor.execute(sql, (getNewTransId(), userId, amount, date))
+        cursor.execute(sql, (getNewTransId(), userId, amount, date,remark))
         
         conn.commit()
 
@@ -139,7 +140,7 @@ def getNewTransId():
             next_number = 1
 
         # 返回新的交易編號，並在前面加上 "req"
-        return f"req_{date_part}_{next_number:03}"
+        return f"res_{date_part}_{next_number:03}"
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -167,3 +168,4 @@ def getUserData():
 
     return [dict(zip(column_names, row)) for row in results]
 
+# print(getData())
