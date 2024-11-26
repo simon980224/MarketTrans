@@ -5,7 +5,6 @@
   <button type="button" class="btn btn-success btn-lg" onclick="showAddModal()">新增</button>
 </div>
 
-<!-- 查詢表格 -->
 <table class="table table-bordered">
   <form id="queryForm">
     <thead class="thead-light">
@@ -49,7 +48,6 @@
   </form>
 </table>
 
-<!-- 查詢結果表格 -->
 <div id="results">
   {% if trans_requests_data %}
   <div class="d-flex justify-content-between align-items-center mb-2">
@@ -59,19 +57,19 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>交易編號</th>
         <th>用戶名稱</th>
         <th>回款金額</th>
         <th>回款日期</th>
+        <th>交易備註</th>
       </tr>
     </thead>
     <tbody>
       {% for trans_requests in trans_requests_data %}
       <tr>
-        <td>{{ trans_requests['Trans_Id'] }}</td>
         <td>{{ trans_requests['User_Id'] }}</td>
         <td>{{ trans_requests['Trans_Amount'] }}</td>
         <td>{{ trans_requests['Trans_Date'] }}</td>
+        <td>{{ trans_requests['Remark'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -81,7 +79,6 @@
   {% endif %}
 </div>
 
-<!-- 新增項目模態框 -->
 <table id="addModalTable">
   <tr>
     <td>
@@ -93,24 +90,28 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <!-- 模態框內容 -->
               <form id="addForm">
                 <div class="mb-3">
                   <label for="newUserId" class="form-label">用戶名稱</label>
+                  <label style="color: red;">*</label>
                   <input type="text" class="form-control" id="newUserId" name="newUserId" required>
                 </div>
                 <div class="mb-3">
                   <label for="newAmount" class="form-label">回款金額</label>
+                  <label style="color: red;">*</label>
                   <input type="number" class="form-control" id="newAmount" name="newAmount" required>
                 </div>
                 <div class="mb-3">
                   <label for="newDate" class="form-label">回款日期</label>
+                  <label style="color: red;">*</label>
                   <input type="date" class="form-control" id="newDate" name="newDate" required>
                 </div>
+                <div class="mb-3">
+                  <label for="newRemark" class="form-label">備註</label>
+                  <input type="text" class="form-control" id="newRemark" name="newRemark">
+                </div>
                 <div class="modal-footer">
-                  <!-- 提交按鈕 -->
                   <button type="submit" class="btn btn-primary" onclick="save(event)" form="addForm">提交</button>
-                  <!-- 取消按鈕 -->
                   <button type="button" class="btn btn-secondary" onclick="hideAddModal()">取消</button>
                 </div>
               </form>
@@ -153,9 +154,9 @@
         const resultsDiv = document.getElementById('results');
         if (data.trans_requests_data.length > 0) {
           let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.trans_requests_data[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
-          content += '<table class="table table-striped"><thead><tr><th>交易編號</th><th>用戶名稱</th><th>回款金額</th><th>回款日期</th></tr></thead><tbody>';
+          content += '<table class="table table-striped"><thead><tr><th>用戶名稱</th><th>入帳金額</th><th>入帳日期</th><th>交易備註</th></tr></thead><tbody>';
           data.trans_requests_data.forEach(record => {
-            content += `<tr><td>${record.Trans_Id}</td><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td></tr>`;
+            content += `<tr><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td><td>${record.Remark}</td></tr>`;
           });
           content += '</tbody></table>';
           resultsDiv.innerHTML = content;
@@ -190,10 +191,7 @@
   }
 
   function clearAddForm() {
-    document.getElementById('newUserId').value = '';
-    document.getElementById('newAmount').value = '';
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('newDate').value = today;
+    document.getElementById('addForm').reset();
   }
 
   function save(event) {
@@ -202,6 +200,7 @@
     const newUserId = document.getElementById('newUserId').value.toUpperCase();
     const newAmount = document.getElementById('newAmount').value;
     const newDate = document.getElementById('newDate').value;
+    const newRemark = document.getElementById('newRemark').value;
 
     if (newUserId && newAmount && newDate) {
       fetch('/TransRequests/TransRequests_append', {
@@ -209,7 +208,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ newUserId, newAmount, newDate })
+        body: JSON.stringify({ newUserId, newAmount, newDate, newRemark })
       })
         .then(response => response.json())
         .then(data => {

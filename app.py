@@ -23,8 +23,8 @@ def TransRequests_query():
     startDate = data.get('startDate', '').strip() or None
     endDate = data.get('endDate', '').strip() or None
 
-    trans_response_data = TransRequestsService.getData(userId, startDate, endDate)
-    return jsonify(trans_response_data=trans_response_data)
+    trans_requests_data = TransRequestsService.getData(userId, startDate, endDate)
+    return jsonify(trans_requests_data=trans_requests_data)
 
 @app.route('/TransRequests/TransRequests_append', methods=['POST'])
 def TransRequests_append():
@@ -33,12 +33,10 @@ def TransRequests_append():
     amount = data.get('newAmount', '').strip() or None
     date = data.get('newDate', '').strip() or None
     remark = data.get('newRemark', '').strip() or ''
-
     if not TransRequestsService.checkUserExists(userId):
         return jsonify(success=False, message='用戶不存在'), 400
-
     try:
-        TransRequestsService.addRecord(userId, amount, date,remark)
+        TransRequestsService.addRecord(userId, amount, date, remark)
         return jsonify(success=True, message='新增成功'), 200
     
     except Exception as e:
@@ -105,7 +103,7 @@ def TransResponse_append():
         return jsonify(success=False, message='用戶不存在'), 400
 
     try:
-        TransResponseService.addRecord(userId, amount, date,remark)
+        TransResponseService.addRecord(userId, amount, date, remark)
         return jsonify(success=True, message='新增成功'), 200
     
     except Exception as e:

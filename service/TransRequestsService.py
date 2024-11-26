@@ -16,6 +16,7 @@ def getData(userId=None, startDate=None, endDate=None):
                 User_Id, 
                 Trans_Amount, 
                 Trans_Date, 
+                Remark, 
                 Total_Amount
             FROM (
                 SELECT 
@@ -81,17 +82,17 @@ def checkUserExists(userId):
         if conn:
             conn.close()
 
-def addRecord(userId, amount, date):
+def addRecord(userId, amount, date,remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
 
         sql = '''
-            INSERT INTO TransRequests (Trans_Id, User_Id, Trans_Amount, Trans_Date)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO TransRequests (Trans_Id, User_Id, Trans_Amount, Trans_Date,Remark)
+            VALUES (?, ?, ?, ?,?)
         '''
-        cursor.execute(sql, (getNewTransId(), userId, amount, date))
+        cursor.execute(sql, (getNewTransId(), userId, amount, date, remark))
         
         conn.commit()
 
