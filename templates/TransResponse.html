@@ -147,7 +147,7 @@
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/TransResponse/query', {
+    fetch('/TransResponse/TransResponse_query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -209,7 +209,7 @@
     const newRemark = document.getElementById('newRemark').value;
 
     if (newUserId && newAmount && newDate) {
-      fetch('/TransResponse/append', {
+      fetch('/TransResponse/TransResponse_append', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -241,7 +241,7 @@
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/TransResponse/export', {
+    fetch('/TransResponse/TransResponse_export', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

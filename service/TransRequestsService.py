@@ -22,7 +22,7 @@ def getData(userId=None, startDate=None, endDate=None):
                     *,
                     SUM(Trans_Amount) OVER() AS Total_Amount
                 FROM 
-                    TransResponse
+                    TransRequests
                 WHERE 
                     1=1
         '''
@@ -88,7 +88,7 @@ def addRecord(userId, amount, date):
         cursor = conn.cursor()
 
         sql = '''
-            INSERT INTO TransResponse (Trans_Id, User_Id, Trans_Amount, Trans_Date)
+            INSERT INTO TransRequests (Trans_Id, User_Id, Trans_Amount, Trans_Date)
             VALUES (?, ?, ?, ?)
         '''
         cursor.execute(sql, (getNewTransId(), userId, amount, date))
@@ -122,7 +122,7 @@ def getNewTransId():
 
         # 查詢當日最大交易編號
         cursor.execute("""
-            SELECT Trans_Id FROM TransResponse 
+            SELECT Trans_Id FROM TransRequests 
             WHERE Trans_Id LIKE ? 
             ORDER BY Trans_Id DESC 
             LIMIT 1
@@ -167,3 +167,4 @@ def getUserData():
 
     return [dict(zip(column_names, row)) for row in results]
 
+# print(getData())

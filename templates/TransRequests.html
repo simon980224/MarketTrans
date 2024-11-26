@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1>回款明細</h1>
+  <h1>入帳明細</h1>
   <button type="button" class="btn btn-success btn-lg" onclick="showAddModal()">新增</button>
 </div>
 
@@ -51,7 +51,7 @@
 
 <!-- 查詢結果表格 -->
 <div id="results">
-  {% if trans_response_data %}
+  {% if trans_requests_data %}
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
     <button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button>
@@ -66,12 +66,12 @@
       </tr>
     </thead>
     <tbody>
-      {% for trans_response in trans_response_data %}
+      {% for trans_requests in trans_requests_data %}
       <tr>
-        <td>{{ trans_response['Trans_Id'] }}</td>
-        <td>{{ trans_response['User_Id'] }}</td>
-        <td>{{ trans_response['Trans_Amount'] }}</td>
-        <td>{{ trans_response['Trans_Date'] }}</td>
+        <td>{{ trans_requests['Trans_Id'] }}</td>
+        <td>{{ trans_requests['User_Id'] }}</td>
+        <td>{{ trans_requests['Trans_Amount'] }}</td>
+        <td>{{ trans_requests['Trans_Date'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -140,7 +140,7 @@
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/TransResponse/query', {
+    fetch('/TransRequests/TransRequests_query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -151,10 +151,10 @@
       .then(data => {
         closeLoading();
         const resultsDiv = document.getElementById('results');
-        if (data.trans_response_data.length > 0) {
-          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.trans_response_data[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
+        if (data.trans_requests_data.length > 0) {
+          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.trans_requests_data[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
           content += '<table class="table table-striped"><thead><tr><th>交易編號</th><th>用戶名稱</th><th>回款金額</th><th>回款日期</th></tr></thead><tbody>';
-          data.trans_response_data.forEach(record => {
+          data.trans_requests_data.forEach(record => {
             content += `<tr><td>${record.Trans_Id}</td><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td></tr>`;
           });
           content += '</tbody></table>';
@@ -204,7 +204,7 @@
     const newDate = document.getElementById('newDate').value;
 
     if (newUserId && newAmount && newDate) {
-      fetch('/TransResponse/append', {
+      fetch('/TransRequests/TransRequests_append', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -236,7 +236,7 @@
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    fetch('/TransResponse/export', {
+    fetch('/TransRequests/TransRequests_export', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -248,7 +248,7 @@
         const url = window.URL.createObjectURL(new Blob([blob]));
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'TransResponse.xlsx');
+        link.setAttribute('download', 'TransRequests.xlsx');
         document.body.appendChild(link);
         link.click();
         link.parentNode.removeChild(link);
