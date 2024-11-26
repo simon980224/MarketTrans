@@ -3,7 +3,7 @@ from io import BytesIO
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file
 
-from service import TransRequestsService,TransResponseService
+from service import TransRequestsService, TransResponseService
 
 app = Flask(__name__)
 
@@ -11,10 +11,15 @@ app = Flask(__name__)
 def index():
     return render_template('index.html', title='首頁')
 
+@app.route('/UserMgr', methods=['GET', 'POST'])
+def UserMgr():
+    # user_data = TransRequestsService.getUserData()
+    return render_template('UserMgr.html', title='用戶管理')
+
 @app.route('/TransRequests', methods=['GET', 'POST'])
 def TransRequests():
     user_data = TransRequestsService.getUserData()
-    return render_template('TransRequests.html', title='用戶管理', user_data=user_data)
+    return render_template('TransRequests.html', title='入帳明細', user_data=user_data)
 
 @app.route('/TransRequests/TransRequests_query', methods=['POST'])
 def TransRequests_query():
@@ -142,6 +147,10 @@ def TransResponse_export():
                      as_attachment=True, 
                      download_name='TransResponse.xlsx', 
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@app.route('/api/example', methods=['GET'])
+def example_api():
+    return jsonify({'message': 'This is an example API endpoint'})
 
 if __name__ == '__main__':
     app.run(debug=True)
