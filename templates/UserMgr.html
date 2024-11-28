@@ -15,7 +15,7 @@
     <tbody>
       <tr>
         <td>
-          <label class="form-label">用戶名稱</label>
+          <label class="form-label">用戶編號</label>
         </td>
         <td>
           <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
@@ -28,14 +28,15 @@
       </tr>
       <tr>
         <td>
-          <label class="form-label">日期區間</label>
+          <label class="form-label">用戶名稱</label>
         </td>
         <td>
-          <div class="d-flex align-items-center">
-            <input type="date" class="form-control" id="startDate" name="startDate" />
-            <span>~</span>
-            <input type="date" class="form-control" id="endDate" name="endDate" />
-          </div>
+          <input list="user_data" type="text" class="form-control" id="Local_Name" name="Local_Name" />
+          <datalist id="user_data">
+            {% for user in user_data %}
+            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
+            {% endfor %}
+          </datalist>
         </td>
       </tr>
       <tr>

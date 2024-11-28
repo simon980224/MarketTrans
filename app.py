@@ -1,11 +1,28 @@
 from io import BytesIO
-
+import os
 import pandas as pd
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, jsonify, render_template, request, send_file, abort
 
 from service import TransRequestsService, TransResponseService
 
+# LINE Bot SDK 的相關匯入
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import (
+    MessageEvent,
+    TextMessage,
+    TextSendMessage,
+    # 根據需要添加其他模型
+)
+
 app = Flask(__name__)
+
+# 從環境變量中讀取憑證
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', 'EKbygnyOwphN6TlaiWgnPn2pmM6HAIt1J4aGPg6wAhVGSbka391Im6byisw8F3zkjahjzk9TVWyxEp4O4OD3rw8dBgCqbKB8noTA3ELj7Z/Of67cmbphPp3CvcS9G0Urp/qVg02wKSZDe7j8JYNROAdB04t89/1O/w1cDnyilFU=')
+LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET', '84941f1ceb280db34dd751d4def5a146')
+
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 @app.route('/')
 def index():
@@ -43,10 +60,9 @@ def TransRequests_append():
     try:
         TransRequestsService.addRecord(userId, amount, date, remark)
         return jsonify(success=True, message='新增成功'), 200
-    
     except Exception as e:
         return jsonify(success=False, message=str(e)), 400
-    
+
 @app.route('/TransRequests/TransRequests_export', methods=['POST'])
 def TransRequests_export():
     data = request.json
@@ -110,7 +126,6 @@ def TransResponse_append():
     try:
         TransResponseService.addRecord(userId, amount, date, remark)
         return jsonify(success=True, message='新增成功'), 200
-    
     except Exception as e:
         return jsonify(success=False, message=str(e)), 400
 
@@ -148,9 +163,56 @@ def TransResponse_export():
                      download_name='TransResponse.xlsx', 
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-@app.route('/api/example', methods=['GET'])
-def example_api():
-    return jsonify({'message': 'This is an example API endpoint'})
+@app.route("/Api", methods=['POST'])
+def Api():
+    # 取得 LINE 發送的 X-Line-Signature 標頭
+    signature = request.headers.get('X-Line-Signature')
+
+    # 取得請求的主體
+    body = request.get_data(as_text=True)
+
+    # 驗證簽名並解析事件
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+
+    return 'OK'
+
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_message = event.message.text.strip()
+    user_id = event.source.user_id
+    app.logger.info(f"Received message from user {user_id}: {user_message}")
+
+    if user_message == '/測試':
+    # 回傳event結構
+        response_text = f"您的 event 是 {event}"
+
+    if user_message == '/查詢回款':
+        trans_data = TransResponseService.getData()
+        if not trans_data:
+            response_text = "沒有找到任何回款紀錄。"
+        else:
+            # 建立回應訊息
+            response_text = "以下是您的回款明細：\n\n"
+            for item in trans_data:
+                response_text += (
+                    f"回款金額：{item['Trans_Amount']}\n"
+                    f"回款日期：{item['Trans_Date']}\n"
+                )
+                if item.get('Remark'):
+                    response_text += f"備註：{item['Remark']}\n"
+                response_text += "-" * 27 + "\n"
+    
+    # else:
+    #     response_text = "抱歉，我無法理解您的指令。請使用 '/查詢回款' 來查詢回款明細。"
+
+    # 使用 LINE Messaging API 發送回應
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=response_text)
+    )
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
