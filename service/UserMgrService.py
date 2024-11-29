@@ -4,6 +4,7 @@ import sqlite3
 # 統一管理資料庫位置
 DATABASE_PATH = 'Transaction.db'
 
+
 def getData(userId=None, startDate=None, endDate=None):
     try:
         # 連接到 SQLite 資料庫
@@ -59,6 +60,7 @@ def getData(userId=None, startDate=None, endDate=None):
         if conn:
             conn.close()
 
+
 def checkUserExists(userId):
     try:
         # 連接到 SQLite 資料庫
@@ -82,7 +84,8 @@ def checkUserExists(userId):
         if conn:
             conn.close()
 
-def addRecord(userId, amount, date,remark):
+
+def addRecord(userId, amount, date, remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
@@ -93,7 +96,7 @@ def addRecord(userId, amount, date,remark):
             VALUES (?, ?, ?, ?,?)
         '''
         cursor.execute(sql, (getNewTransId(), userId, amount, date, remark))
-        
+
         conn.commit()
 
     except sqlite3.Error as e:
@@ -106,6 +109,7 @@ def addRecord(userId, amount, date,remark):
             cursor.close()
         if conn:
             conn.close()
+
 
 def getNewTransId():
     try:
@@ -150,6 +154,7 @@ def getNewTransId():
             cursor.close()
         if conn:
             conn.close()
+
 
 def getUserData():
     conn = sqlite3.connect(DATABASE_PATH)

@@ -19,19 +19,10 @@
           <label class="form-label">用戶編號</label>
         </td>
         <td>
-          <input
-            list="user_data"
-            type="text"
-            class="form-control"
-            id="userId"
-            name="userId"
-          />
+          <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
           <datalist id="user_data">
             {% for user in user_data %}
-            <option
-              label="{{ user.Local_Name }}"
-              value="{{ user.User_Id }}"
-            ></option>
+            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
             {% endfor %}
           </datalist>
         </td>
@@ -41,37 +32,20 @@
           <label class="form-label">用戶名稱</label>
         </td>
         <td>
-          <input
-            list="user_data"
-            type="text"
-            class="form-control"
-            id="Local_Name"
-            name="Local_Name"
-          />
+          <input list="user_data" type="text" class="form-control" id="Local_Name" name="Local_Name" />
           <datalist id="user_data">
             {% for user in user_data %}
-            <option
-              label="{{ user.Local_Name }}"
-              value="{{ user.User_Id }}"
-            ></option>
+            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
             {% endfor %}
           </datalist>
         </td>
       </tr>
       <tr>
         <td colspan="2" class="text-center">
-          <button
-            type="button"
-            class="btn btn-primary btn-lg"
-            onclick="queryForm()"
-          >
+          <button type="button" class="btn btn-primary btn-lg" onclick="queryForm()">
             查詢
           </button>
-          <button
-            type="button"
-            class="btn btn-secondary btn-lg"
-            onclick="clearForm()"
-          >
+          <button type="button" class="btn btn-secondary btn-lg" onclick="clearForm()">
             清除
           </button>
         </td>
@@ -84,11 +58,7 @@
   {% if trans_response_data %}
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
-    <button
-      type="button"
-      class="btn btn-secondary btn-lg"
-      onclick="exportForm()"
-    >
+    <button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">
       匯出
     </button>
   </div>
@@ -120,82 +90,39 @@
 <table id="addModalTable">
   <tr>
     <td>
-      <div
-        class="modal fade"
-        id="addModal"
-        tabindex="-1"
-        aria-labelledby="addModalLabel"
-        aria-hidden="true"
-      >
+      <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="addModalLabel">新增項目</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <form id="addForm">
                 <div class="mb-3">
                   <label for="newUserId" class="form-label">用戶名稱</label>
                   <label style="color: red">*</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="newUserId"
-                    name="newUserId"
-                    required
-                  />
+                  <input type="text" class="form-control" id="newUserId" name="newUserId" required />
                 </div>
                 <div class="mb-3">
                   <label for="newAmount" class="form-label">回款金額</label>
                   <label style="color: red">*</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="newAmount"
-                    name="newAmount"
-                    required
-                  />
+                  <input type="number" class="form-control" id="newAmount" name="newAmount" required />
                 </div>
                 <div class="mb-3">
                   <label for="newDate" class="form-label">回款日期</label>
                   <label style="color: red">*</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    id="newDate"
-                    name="newDate"
-                    required
-                  />
+                  <input type="date" class="form-control" id="newDate" name="newDate" required />
                 </div>
                 <div class="mb-3">
                   <label for="newRemark" class="form-label">備註</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="newRemark"
-                    name="newRemark"
-                  />
+                  <input type="text" class="form-control" id="newRemark" name="newRemark" />
                 </div>
                 <div class="modal-footer">
-                  <button
-                    type="submit"
-                    class="btn btn-primary"
-                    onclick="save(event)"
-                    form="addForm"
-                  >
+                  <button type="submit" class="btn btn-primary" onclick="save(event)" form="addForm">
                     提交
                   </button>
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    onclick="hideAddModal()"
-                  >
+                  <button type="button" class="btn btn-secondary" onclick="hideAddModal()">
                     取消
                   </button>
                 </div>
