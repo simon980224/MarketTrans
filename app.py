@@ -154,14 +154,10 @@ def handle_message(event):
                 )
                 if item.get('Remark'):
                     response_text += f"備註：{item['Remark']}\n"
-                response_text += "-" * 27 + "\n"
+                response_text += "-" * 25 + "\n"
         else:
             response_text = "沒有找到任何交易明細。"
 
-    # else:
-    #     response_text = "抱歉，我無法理解您的指令。請使用 '/查詢回款' 來查詢回款明細。"
-
-    # 使用 LINE Messaging API 發送回應
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=response_text)

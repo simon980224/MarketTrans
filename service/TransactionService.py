@@ -27,7 +27,11 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
             FROM (
                 SELECT 
                     *,
-                    SUM(Trans_Amount) OVER() AS Total_Amount
+                    SUM(CASE 
+                        WHEN Trans_Type = 'I' THEN -Trans_Amount 
+                        WHEN Trans_Type = 'O' THEN Trans_Amount 
+                        ELSE 0 
+                    END) OVER() AS Total_Amount
                 FROM 
                     "Transaction"
                 WHERE 
