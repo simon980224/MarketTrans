@@ -3,7 +3,7 @@
 // 顯示成功訊息
 function showSuccess(title, text) {
   Swal.fire({
-    icon: 'success',
+    icon: "success",
     title: title,
     text: text,
   });
@@ -12,7 +12,7 @@ function showSuccess(title, text) {
 // 顯示錯誤訊息
 function showError(title, text) {
   Swal.fire({
-    icon: 'error',
+    icon: "error",
     title: title,
     text: text,
   });
@@ -21,7 +21,7 @@ function showError(title, text) {
 // 顯示警告訊息
 function showWarning(title, text) {
   Swal.fire({
-    icon: 'warning',
+    icon: "warning",
     title: title,
     text: text,
   });
@@ -35,7 +35,7 @@ function showLoading(title, text) {
     allowOutsideClick: false,
     didOpen: () => {
       Swal.showLoading();
-    }
+    },
   });
 }
 

@@ -4,7 +4,8 @@ import sqlite3
 # 統一管理資料庫位置
 DATABASE_PATH = 'Transaction.db'
 
-def getData(userId=None, startDate=None, endDate=None):
+
+def getData(userId=None, startDate=None, endDate=None, transType=None):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
@@ -16,6 +17,11 @@ def getData(userId=None, startDate=None, endDate=None):
                 User_Id, 
                 Trans_Amount, 
                 Trans_Date, 
+                CASE 
+                    WHEN Trans_Type = 'I' THEN '入帳'
+                    WHEN Trans_Type = 'O' THEN '回款'
+                    ELSE Trans_Type
+                END AS Trans_Type,
                 Remark, 
                 Total_Amount
             FROM (
@@ -23,7 +29,7 @@ def getData(userId=None, startDate=None, endDate=None):
                     *,
                     SUM(Trans_Amount) OVER() AS Total_Amount
                 FROM 
-                    TransRequests
+                    "Transaction"
                 WHERE 
                     1=1
         '''
@@ -36,6 +42,10 @@ def getData(userId=None, startDate=None, endDate=None):
             sql += ' AND Trans_Date BETWEEN ? AND ?'
             parameters.append(startDate)
             parameters.append(endDate)
+        if transType:
+            placeholders = ', '.join('?' for _ in transType)
+            sql += f' AND Trans_Type IN ({placeholders})'
+            parameters.extend(transType)
 
         sql += '''
             )
@@ -58,6 +68,7 @@ def getData(userId=None, startDate=None, endDate=None):
             cursor.close()
         if conn:
             conn.close()
+
 
 def checkUserExists(userId):
     try:
@@ -82,18 +93,20 @@ def checkUserExists(userId):
         if conn:
             conn.close()
 
-def addRecord(userId, amount, date,remark):
+
+def addRecord(userId, amount, date, transType, remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
 
         sql = '''
-            INSERT INTO TransRequests (Trans_Id, User_Id, Trans_Amount, Trans_Date,Remark)
-            VALUES (?, ?, ?, ?,?)
+            INSERT INTO "Transaction" (Trans_Id, User_Id, Trans_Amount, Trans_Date, Trans_Type, Remark)
+            VALUES (?, ?, ?, ?, ?, ?)
         '''
-        cursor.execute(sql, (getNewTransId(), userId, amount, date, remark))
-        
+        cursor.execute(sql, (getNewTransId(), userId,
+                       amount, date, transType, remark))
+
         conn.commit()
 
     except sqlite3.Error as e:
@@ -106,6 +119,7 @@ def addRecord(userId, amount, date,remark):
             cursor.close()
         if conn:
             conn.close()
+
 
 def getNewTransId():
     try:
@@ -123,24 +137,24 @@ def getNewTransId():
 
         # 查詢當日最大交易編號
         cursor.execute("""
-            SELECT Trans_Id FROM TransRequests 
+            SELECT Trans_Id FROM "Transaction" 
             WHERE Trans_Id LIKE ? 
             ORDER BY Trans_Id DESC 
             LIMIT 1
-        """, (f"{date_part}%",))
+        """, (f"%{date_part}%",))
         result = cursor.fetchone()
 
         if result:
             # 解析出編號部分，並遞增
             last_id = result[0]
-            last_number = int(last_id.split('_')[1])
+            last_number = int(last_id.split('_')[2])
             next_number = last_number + 1
         else:
             # 如果沒有當天的交易，從1開始
             next_number = 1
 
-        # 返回新的交易編號，並在前面加上 "req"
-        return f"req_{date_part}_{next_number:03}"
+        # 返回新的交易編號，並在前面加上 "T"
+        return f"T_{date_part}_{next_number:03}"
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -150,6 +164,7 @@ def getNewTransId():
             cursor.close()
         if conn:
             conn.close()
+
 
 def getUserData():
     conn = sqlite3.connect(DATABASE_PATH)
@@ -167,5 +182,3 @@ def getUserData():
     column_names = [description[0] for description in cursor.description]
 
     return [dict(zip(column_names, row)) for row in results]
-
-# print(getData())
