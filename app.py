@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file, abort
 
-from service import TransactionService
+from Service import transactionService
 
 # LINE Bot SDK 的相關匯入
 from linebot import LineBotApi, WebhookHandler
@@ -40,7 +40,7 @@ def UserMgr():
 
 @app.route('/Transaction', methods=['GET', 'POST'])
 def Transaction():
-    user_data = TransactionService.getUserData()
+    user_data = transactionService.getUserData()
     return render_template('Transaction.html', title='交易明細', user_data=user_data)
 
 
@@ -52,8 +52,7 @@ def Transaction_query():
     endDate = data.get('endDate', '').strip() or None
     transType = data.get('transType', '') or None
 
-    transDatas = TransactionService.getData(
-        userId, startDate, endDate, transType)
+    transDatas = transactionService.getData(userId, startDate, endDate, transType)
     return jsonify(transDatas=transDatas)
 
 
@@ -66,10 +65,10 @@ def Transaction_append():
     transType = data.get('newTransType', '').strip() or None
     remark = data.get('newRemark', '').strip() or ''
 
-    if not TransactionService.checkUserExists(userId):
+    if not transactionService.checkUserExists(userId):
         return jsonify(success=False, message='用戶不存在'), 400
     try:
-        TransactionService.addRecord(userId, amount, date, transType, remark)
+        transactionService.addTransaction(userId, amount, date, transType, remark)
         return jsonify(success=True, message='新增成功'), 200
     except Exception as e:
         return jsonify(success=False, message=str(e)), 400
@@ -82,19 +81,14 @@ def Transaction_export():
     startDate = data.get('startDate', '').strip() or None
     endDate = data.get('endDate', '').strip() or None
 
-    trans_requests_data = TransactionService.getData(
-        userId, startDate, endDate)
+    transDatas = transactionService.getData(userId, startDate, endDate)['Transactions']
 
-    df = pd.DataFrame(trans_requests_data)
-
-    if 'Total_Amount' in df.columns:
-        df.drop(columns=['Total_Amount'], inplace=True)
+    df = pd.DataFrame(transDatas)
 
     columns = {
-        'Trans_Id': '交易編號',
-        'User_Id': '用戶名稱',
+        'User_Id': '用戶編號',
         'Trans_Amount': '交易金額',
-        'Trans_Date': '入帳日期',
+        'Trans_Date': '交易日期',
         'Trans_Type': '交易類型',
         'Remark': '備註'
     }
@@ -143,7 +137,7 @@ def handle_message(event):
         response_text = f"{event}"
 
     if user_message == '/查詢明細':
-        trans_data = TransactionService.getData()[:9]
+        trans_data = transactionService.getData()[:9]
         if len(trans_data) > 0:
             response_text = "以下是您近10筆交易明細：\n\n"
             for item in trans_data:

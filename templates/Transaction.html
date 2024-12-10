@@ -16,13 +16,13 @@
     <tbody>
       <tr>
         <td>
-          <label class="form-label">用戶名稱</label>
+          <label class="form-label">用戶編號</label>
         </td>
         <td>
           <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
           <datalist id="user_data">
             {% for user in user_data %}
-            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
+            <option label="{{ user.User_Id + user.Local_Name }}" value="{{ user.User_Id }}"></option>
             {% endfor %}
           </datalist>
         </td>
@@ -71,7 +71,7 @@
 <div id="results">
   {% if transDatas %}
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
+    <h1>總金額: <span>{{ transDatas.total_Amount }}</span></h1>
     <button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">
       匯出
     </button>
@@ -80,20 +80,20 @@
     <thead>
       <tr>
         <th>用戶名稱</th>
-        <th>回款金額</th>
-        <th>回款日期</th>
+        <th>交易金額</th>
+        <th>交易日期</th>
         <th>交易類型</th>
         <th>交易備註</th>
       </tr>
     </thead>
     <tbody>
-      {% for transData in transDatas %}
+      {% for transaction in transDatas.Transactions %}
       <tr>
-        <td>{{ transData['User_Id'] }}</td>
-        <td>{{ transData['Trans_Amount'] }}</td>
-        <td>{{ transData['Trans_Date'] }}</td>
-        <td>{{ transData['Trans_Type'] }}</td>
-        <td>{{ transData['Remark'] }}</td>
+        <td>{{ transaction['User_Id'] }}</td>
+        <td>{{ transaction['Trans_Amount'] }}</td>
+        <td>{{ transaction['Trans_Date'] }}</td>
+        <td>{{ transaction['Trans_Type'] }}</td>
+        <td>{{ transaction['Remark'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -116,17 +116,22 @@
             <div class="modal-body">
               <form id="addForm">
                 <div class="mb-3">
-                  <label for="newUserId" class="form-label">用戶名稱</label>
+                  <label for="newUserId" class="form-label">用戶編號</label>
                   <label style="color: red">*</label>
-                  <input type="text" class="form-control" id="newUserId" name="newUserId" required />
+                  <input list="user_data" type="text" class="form-control" id="newUserId" name="newUserId" />
+                  <datalist id="user_data">
+                    {% for user in user_data %}
+                    <option label="{{ user.User_Id + user.Local_Name }}" value="{{ user.User_Id }}"></option>
+                    {% endfor %}
+                  </datalist>
                 </div>
                 <div class="mb-3">
-                  <label for="newAmount" class="form-label">回款金額</label>
+                  <label for="newAmount" class="form-label">交易金額</label>
                   <label style="color: red">*</label>
                   <input type="number" class="form-control" id="newAmount" name="newAmount" required />
                 </div>
                 <div class="mb-3">
-                  <label for="newDate" class="form-label">回款日期</label>
+                  <label for="newDate" class="form-label">交易日期</label>
                   <label style="color: red">*</label>
                   <input type="date" class="form-control" id="newDate" name="newDate" required />
                 </div>
@@ -139,7 +144,7 @@
                       <label for="newTransTypeIn">入帳</label>
                     </div>
                     <div>
-                      <input type="radio" id="newTransTypeOut" name="newTransType" value="O" />
+                      <input type="radio" id="newTransTypeOut" name="newTransType" value="O" required checked />
                       <label for="newTransTypeOut">回款</label>
                     </div>
                   </div>
@@ -167,18 +172,15 @@
 </table>
 
 <script>
-  // 當 DOM 完全加載後，呼叫 init 函數
   document.addEventListener("DOMContentLoaded", init);
 
-  // 初始化函數
   function init() {
-    const today = new Date().toISOString().split("T")[0];
-    // 設置查詢表單的日期欄位預設為今天
     document.getElementById("startDate").value = "";
     document.getElementById("endDate").value = "";
-    // queryForm();
+    queryForm();
   }
 
+  // TODO 調整查詢總金額擊出入帳資訊
   function queryForm() {
     showLoading("查詢中", "");
     const userId = document.getElementById("userId").value;
@@ -204,12 +206,12 @@
       .then((data) => {
         closeLoading();
         const resultsDiv = document.getElementById("results");
-        if (data.transDatas.length > 0) {
-          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.transDatas[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
+        if (data.transDatas.Transactions.length > 0) {
+          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span>${data.transDatas.total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
           content +=
-            '<table class="table table-striped"><thead><tr><th>用戶名稱</th><th>入帳金額</th><th>入帳日期</th><th>交易類型</th><th>交易備註</th></tr></thead><tbody>';
-          data.transDatas.forEach((transData) => {
-            content += `<tr><td>${transData.User_Id}</td><td>${transData.Trans_Amount}</td><td>${transData.Trans_Date}</td><td>${transData.Trans_Type}</td><td>${transData.Remark}</td></tr>`;
+            '<table class="table table-striped"><thead><tr><th>用戶名稱</th><th>交易金額</th><th>交易日期</th><th>交易類型</th><th>交易備註</th></tr></thead><tbody>';
+          data.transDatas.Transactions.forEach((transaction) => {
+            content += `<tr><td>${transaction.User_Id}</td><td>${transaction.Trans_Amount}</td><td>${transaction.Trans_Date}</td><td>${transaction.Trans_Type}</td><td>${transaction.Remark}</td></tr>`;
           });
           content += "</tbody></table>";
           resultsDiv.innerHTML = content;
@@ -222,7 +224,6 @@
 
   function clearForm() {
     document.getElementById("userId").value = "";
-    const today = new Date().toISOString().split("T")[0];
     document.getElementById("startDate").value = "";
     document.getElementById("endDate").value = "";
     document.getElementById("transTypeIn").checked = false;
@@ -242,14 +243,9 @@
 
   function hideAddModal() {
     document.getElementById("addForm").reset();
-    const addModal = bootstrap.Modal.getInstance(
-      document.getElementById("addModal")
-    );
-    addModal.hide();
-  }
 
-  function clearAddForm() {
-    document.getElementById("addForm").reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById("addModal"));
+    addModal.hide();
   }
 
   function save(event) {
@@ -273,7 +269,7 @@
         .then((data) => {
           if (data.success) {
             showSuccess("成功", data.message);
-            clearAddForm();
+            document.getElementById("addForm").reset();
           } else {
             showError("失敗", data.message);
           }

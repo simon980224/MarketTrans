@@ -85,7 +85,7 @@ def checkUserExists(userId):
             conn.close()
 
 
-def addRecord(userId, amount, date, remark):
+def addTransaction(userId, amount, date, remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)

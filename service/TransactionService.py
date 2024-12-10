@@ -13,7 +13,6 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
 
         sql = '''
             SELECT 
-                Trans_Id, 
                 User_Id, 
                 Trans_Amount, 
                 Trans_Date, 
@@ -22,20 +21,11 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
                     WHEN Trans_Type = 'O' THEN '回款'
                     ELSE Trans_Type
                 END AS Trans_Type,
-                Remark, 
-                Total_Amount
-            FROM (
-                SELECT 
-                    *,
-                    SUM(CASE 
-                        WHEN Trans_Type = 'I' THEN -Trans_Amount 
-                        WHEN Trans_Type = 'O' THEN Trans_Amount 
-                        ELSE 0 
-                    END) OVER() AS Total_Amount
-                FROM 
-                    "Transaction"
-                WHERE 
-                    1=1
+                Remark
+            FROM 
+                "Transaction"
+            WHERE 
+                1=1
         '''
         parameters = []
 
@@ -52,7 +42,6 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
             parameters.extend(transType)
 
         sql += '''
-            )
             ORDER BY Trans_Id DESC
         '''
 
@@ -60,12 +49,21 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
         results = cursor.fetchall()
 
         column_names = [description[0] for description in cursor.description]
+        Transactions = [dict(zip(column_names, row)) for row in results]
 
-        return [dict(zip(column_names, row)) for row in results]
+        total_Amount = sum(transaction['Trans_Amount'] for transaction in Transactions)
+
+        return {
+            'Transactions': Transactions,
+            'total_Amount': total_Amount
+        }
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
-        return []
+        return {
+            'Transactions': [],
+            'total_Amount': 0
+        }
 
     finally:
         if cursor:
@@ -98,7 +96,7 @@ def checkUserExists(userId):
             conn.close()
 
 
-def addRecord(userId, amount, date, transType, remark):
+def addTransaction(userId, amount, date, transType, remark):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
