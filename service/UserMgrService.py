@@ -5,7 +5,7 @@ import sqlite3
 DATABASE_PATH = 'Transaction.db'
 
 
-def getData(userId=None, startDate=None, endDate=None):
+def getData(userId=None):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
@@ -13,34 +13,23 @@ def getData(userId=None, startDate=None, endDate=None):
 
         sql = '''
             SELECT 
-                Trans_Id, 
                 User_Id, 
-                Trans_Amount, 
-                Trans_Date, 
-                Remark, 
-                Total_Amount
-            FROM (
-                SELECT 
-                    *,
-                    SUM(Trans_Amount) OVER() AS Total_Amount
-                FROM 
-                    TransRequests
-                WHERE 
-                    1=1
+                User_Name, 
+                Line_Id, 
+                Bank_Id
+            FROM 
+                "User"
+            WHERE 
+                1=1
         '''
         parameters = []
 
         if userId:
             sql += ' AND User_Id LIKE ?'
             parameters.append(f"%{userId}%")
-        if startDate and endDate:
-            sql += ' AND Trans_Date BETWEEN ? AND ?'
-            parameters.append(startDate)
-            parameters.append(endDate)
 
         sql += '''
-            )
-            ORDER BY Trans_Id DESC
+            ORDER BY User_Id
         '''
 
         cursor.execute(sql, parameters)
@@ -85,17 +74,17 @@ def checkUserExists(userId):
             conn.close()
 
 
-def addTransaction(userId, amount, date, remark):
+def addUser(userId, userName, lineId, bankId):
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
 
         sql = '''
-            INSERT INTO TransRequests (Trans_Id, User_Id, Trans_Amount, Trans_Date,Remark)
-            VALUES (?, ?, ?, ?,?)
+            INSERT INTO User (User_Id, User_Name, Line_Id, Bank_Id)
+            VALUES (?, ?, ?, ?)
         '''
-        cursor.execute(sql, (getNewTransId(), userId, amount, date, remark))
+        cursor.execute(sql, (userId, userName, lineId, bankId))
 
         conn.commit()
 
@@ -111,40 +100,77 @@ def addTransaction(userId, amount, date, remark):
             conn.close()
 
 
-def getNewTransId():
+# def getNewTransId():
+#     try:
+#         # 連接到 SQLite 資料庫
+#         conn = sqlite3.connect(DATABASE_PATH)
+#         cursor = conn.cursor()
+
+#         today = datetime.now()
+#         year = today.year % 100  # 取得年份的後兩位
+#         month = today.month
+#         day = today.day
+
+#         # 格式化日期部分
+#         date_part = f"{year:02}{month:02}{day:02}"
+
+#         # 查詢當日最大交易編號
+#         cursor.execute("""
+#             SELECT Trans_Id FROM TransRequests 
+#             WHERE Trans_Id LIKE ? 
+#             ORDER BY Trans_Id DESC 
+#             LIMIT 1
+#         """, (f"{date_part}%",))
+#         result = cursor.fetchone()
+
+#         if result:
+#             # 解析出編號部分，並遞增
+#             last_id = result[0]
+#             last_number = int(last_id.split('_')[1])
+#             next_number = last_number + 1
+#         else:
+#             # 如果沒有當天的交易，從1開始
+#             next_number = 1
+
+#         # 返回新的交易編號，並在前面加上 "req"
+#         return f"req_{date_part}_{next_number:03}"
+
+#     except sqlite3.Error as e:
+#         print(f"An error occurred: {e}")
+
+#     finally:
+#         if cursor:
+#             cursor.close()
+#         if conn:
+#             conn.close()
+
+def getNewUserId():
     try:
         # 連接到 SQLite 資料庫
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
 
-        today = datetime.now()
-        year = today.year % 100  # 取得年份的後兩位
-        month = today.month
-        day = today.day
-
-        # 格式化日期部分
-        date_part = f"{year:02}{month:02}{day:02}"
-
-        # 查詢當日最大交易編號
+        # 查詢最大用戶編號
         cursor.execute("""
-            SELECT Trans_Id FROM TransRequests 
-            WHERE Trans_Id LIKE ? 
-            ORDER BY Trans_Id DESC 
+            SELECT User_Id FROM User
+            ORDER BY User_Id DESC
             LIMIT 1
-        """, (f"{date_part}%",))
+        """)
         result = cursor.fetchone()
-
+        # User_Id 格式為Axxx
         if result:
             # 解析出編號部分，並遞增
             last_id = result[0]
-            last_number = int(last_id.split('_')[1])
+            print('last_id',last_id)
+            last_number = int(last_id.split('U')[1])
+            print('last_number',last_number)
             next_number = last_number + 1
         else:
-            # 如果沒有當天的交易，從1開始
+            # 如果沒有用戶，從1開始
             next_number = 1
 
-        # 返回新的交易編號，並在前面加上 "req"
-        return f"req_{date_part}_{next_number:03}"
+        # 返回新的用戶編號
+        return f"U{next_number:03}"
 
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -172,5 +198,3 @@ def getUserData():
     column_names = [description[0] for description in cursor.description]
 
     return [dict(zip(column_names, row)) for row in results]
-
-# print(getData())

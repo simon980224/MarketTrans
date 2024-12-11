@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file, abort
 
-from Service import transactionService
+from Service import userMgrService,transactionService
 
 # LINE Bot SDK 的相關匯入
 from linebot import LineBotApi, WebhookHandler
@@ -35,7 +35,34 @@ def index():
 
 @app.route('/UserMgr', methods=['GET', 'POST'])
 def UserMgr():
-    return render_template('UserMgr.html', title='用戶管理')
+    user_data = transactionService.getUserData()
+    return render_template('UserMgr.html', title='用戶管理', user_data=user_data)
+
+
+@app.route('/UserMgr/UserMgr_query', methods=['POST'])
+def UserMgr_query():
+    data = request.json
+    userId = data.get('userId', '').strip() or None
+
+    userDatas = userMgrService.getData(userId)
+    return jsonify(userDatas=userDatas)
+
+
+@app.route('/UserMgr/UserMgr_append', methods=['POST'])
+def UserMgr_append():
+    data = request.json
+    userId = data.get('newUserId', '').strip() or None
+    userName = data.get('newUserName', '').strip() or None
+    lineId = data.get('newLineId', '').strip() or None
+    bankId = data.get('newBankId', '').strip() or None
+
+    if userMgrService.checkUserExists(userId):
+        return jsonify(success=False, message='用戶已存在'), 400
+    try:
+        userMgrService.addUser(userId, userName, lineId, bankId)
+        return jsonify(success=True, message='新增成功'), 200
+    except Exception as e:
+        return jsonify(success=False, message=str(e)), 400
 
 
 @app.route('/Transaction', methods=['GET', 'POST'])
@@ -87,9 +114,11 @@ def Transaction_export():
 
     columns = {
         'User_Id': '用戶編號',
+        'User_Name': '用戶名稱',
         'Trans_Amount': '交易金額',
         'Trans_Date': '交易日期',
         'Trans_Type': '交易類型',
+        'Trans_Company': '交易公司',
         'Remark': '備註'
     }
 

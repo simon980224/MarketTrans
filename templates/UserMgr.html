@@ -9,9 +9,6 @@
 <table class="table table-bordered">
   <form id="queryForm">
     <thead class="thead-light">
-      <tr>
-        <th colspan="2">查詢</th>
-      </tr>
     </thead>
     <tbody>
       <tr>
@@ -22,20 +19,7 @@
           <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
           <datalist id="user_data">
             {% for user in user_data %}
-            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
-            {% endfor %}
-          </datalist>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label class="form-label">用戶名稱</label>
-        </td>
-        <td>
-          <input list="user_data" type="text" class="form-control" id="Local_Name" name="Local_Name" />
-          <datalist id="user_data">
-            {% for user in user_data %}
-            <option label="{{ user.Local_Name }}" value="{{ user.User_Id }}"></option>
+            <option label="{{ user.User_Name }}" value="{{ user.User_Id }}"></option>
             {% endfor %}
           </datalist>
         </td>
@@ -55,9 +39,8 @@
 </table>
 
 <div id="results">
-  {% if trans_response_data %}
+  {% if userDatas %}
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h1>總金額: <span id="totalAmount">{{ totalAmount }}</span></h1>
     <button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">
       匯出
     </button>
@@ -65,19 +48,19 @@
   <table class="table table-striped">
     <thead>
       <tr>
+        <th>用戶編號</th>
         <th>用戶名稱</th>
-        <th>回款金額</th>
-        <th>回款日期</th>
-        <th>交易備註</th>
+        <th>用戶Line</th>
+        <th>用戶帳戶</th>
       </tr>
     </thead>
     <tbody>
-      {% for trans_response in trans_response_data %}
+      {% for userData in userDatas %}
       <tr>
-        <td>{{ trans_response['User_Id'] }}</td>
-        <td>{{ trans_response['Trans_Amount'] }}</td>
-        <td>{{ trans_response['Trans_Date'] }}</td>
-        <td>{{ trans_response['Remark'] }}</td>
+        <td>{{ userData['User_Id'] }}</td>
+        <td>{{ userData['Trans_Amount'] }}</td>
+        <td>{{ userData['Trans_Date'] }}</td>
+        <td>{{ userData['Remark'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -100,23 +83,22 @@
             <div class="modal-body">
               <form id="addForm">
                 <div class="mb-3">
-                  <label for="newUserId" class="form-label">用戶名稱</label>
+                  <label for="newUserId" class="form-label">用戶編號</label>
                   <label style="color: red">*</label>
                   <input type="text" class="form-control" id="newUserId" name="newUserId" required />
                 </div>
                 <div class="mb-3">
-                  <label for="newAmount" class="form-label">回款金額</label>
+                  <label for="newUserName" class="form-label">用戶名稱</label>
                   <label style="color: red">*</label>
-                  <input type="number" class="form-control" id="newAmount" name="newAmount" required />
+                  <input type="text" class="form-control" id="newUserName" name="newUserName" required />
                 </div>
                 <div class="mb-3">
-                  <label for="newDate" class="form-label">回款日期</label>
-                  <label style="color: red">*</label>
-                  <input type="date" class="form-control" id="newDate" name="newDate" required />
+                  <label for="newLineId" class="form-label">用戶Line</label>
+                  <input type="text" class="form-control" id="newLineId" name="newLineId" />
                 </div>
                 <div class="mb-3">
-                  <label for="newRemark" class="form-label">備註</label>
-                  <input type="text" class="form-control" id="newRemark" name="newRemark" />
+                  <label for="newBankId" class="form-label">用戶帳戶</label>
+                  <input type="text" class="form-control" id="newBankId" name="newBankId" />
                 </div>
                 <div class="modal-footer">
                   <button type="submit" class="btn btn-primary" onclick="save(event)" form="addForm">
@@ -141,58 +123,47 @@
 
   // 初始化函數
   function init() {
-    const today = new Date().toISOString().split("T")[0];
-    // 設置查詢表單的日期欄位預設為今天
-    document.getElementById("startDate").value = "";
-    document.getElementById("endDate").value = "";
     queryForm();
   }
 
   function queryForm() {
     showLoading("查詢中", "");
     const userId = document.getElementById("userId").value;
-    const startDate = document.getElementById("startDate").value;
-    const endDate = document.getElementById("endDate").value;
 
-    fetch("/TransResponse/TransResponse_query", {
+    fetch("/UserMgr/UserMgr_query", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId, startDate, endDate }),
+      body: JSON.stringify({ userId }),
     })
       .then((response) => response.json())
       .then((data) => {
         closeLoading();
         const resultsDiv = document.getElementById("results");
-        if (data.trans_response_data.length > 0) {
-          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span id="totalAmount">${data.trans_response_data[0].Total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
+        if (data.userDatas.length > 0) {
+          let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總用戶: <span id="totalAmount">${data.userDatas.length}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
           content +=
-            '<table class="table table-striped"><thead><tr><th>用戶名稱</th><th>回款金額</th><th>回款日期</th><th>交易備註</th></tr></thead><tbody>';
-          data.trans_response_data.forEach((record) => {
-            content += `<tr><td>${record.User_Id}</td><td>${record.Trans_Amount}</td><td>${record.Trans_Date}</td><td>${record.Remark}</td></tr>`;
+            '<table class="table table-striped"><thead><tr><th>用戶編號</th><th>用戶名稱</th><th>用戶Line</th><th>用戶帳戶</th></tr></thead><tbody>';
+          data.userDatas.forEach((userData) => {
+            content += `<tr><td>${userData.User_Id}</td><td>${userData.User_Name}</td><td>${userData.Line_Id}</td><td>${userData.Bank_Id}</td></tr>`;
           });
           content += "</tbody></table>";
           resultsDiv.innerHTML = content;
         } else {
           resultsDiv.innerHTML = "<p>沒有查詢結果。</p>";
         }
-      });
+      })
+      .catch((error) => console.error("Error during query:", error));
   }
 
   function clearForm() {
     document.getElementById("userId").value = "";
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("startDate").value = "";
-    document.getElementById("endDate").value = "";
     document.getElementById("results").innerHTML = "<p>沒有查詢結果。</p>";
   }
 
   function showAddModal() {
     document.getElementById("addForm").reset();
-
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("newDate").value = today;
 
     const addModal = new bootstrap.Modal(document.getElementById("addModal"));
     addModal.show();
@@ -200,26 +171,21 @@
 
   function hideAddModal() {
     document.getElementById("addForm").reset();
-    const addModal = bootstrap.Modal.getInstance(
-      document.getElementById("addModal")
-    );
-    addModal.hide();
-  }
 
-  function clearAddForm() {
-    document.getElementById("addForm").reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById("addModal"));
+    addModal.hide();
   }
 
   function save(event) {
     event.preventDefault(); // 阻止默認的表單提交行為
 
     const newUserId = document.getElementById("newUserId").value.toUpperCase();
-    const newAmount = document.getElementById("newAmount").value;
-    const newDate = document.getElementById("newDate").value;
-    const newRemark = document.getElementById("newRemark").value;
+    const newUserName = document.getElementById("newUserName").value;
+    const newLineId = document.getElementById("newLineId").value;
+    const newBankId = document.getElementById("newBankId").value;
 
-    if (newUserId && newAmount && newDate) {
-      fetch("/TransResponse/TransResponse_append", {
+    if (newUserId && newUserName) {
+      fetch("/UserMgr/UserMgr_append", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -230,7 +196,7 @@
         .then((data) => {
           if (data.success) {
             showSuccess("成功", data.message);
-            clearAddForm();
+            document.getElementById("addForm").reset();
           } else {
             showError("失敗", data.message);
           }

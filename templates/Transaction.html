@@ -9,9 +9,6 @@
 <table class="table table-bordered">
   <form id="queryForm">
     <thead class="thead-light">
-      <tr>
-        <th colspan="2">查詢</th>
-      </tr>
     </thead>
     <tbody>
       <tr>
@@ -22,7 +19,7 @@
           <input list="user_data" type="text" class="form-control" id="userId" name="userId" />
           <datalist id="user_data">
             {% for user in user_data %}
-            <option label="{{ user.User_Id + user.Local_Name }}" value="{{ user.User_Id }}"></option>
+            <option label="{{ user.User_Name }}" value="{{ user.User_Id }}"></option>
             {% endfor %}
           </datalist>
         </td>
@@ -83,16 +80,18 @@
         <th>交易金額</th>
         <th>交易日期</th>
         <th>交易類型</th>
+        <th>交易公司</th>
         <th>交易備註</th>
       </tr>
     </thead>
     <tbody>
       {% for transaction in transDatas.Transactions %}
       <tr>
-        <td>{{ transaction['User_Id'] }}</td>
+        <td>{{ transaction['User_Id'] ~ transaction['User_Name'] }}</td>
         <td>{{ transaction['Trans_Amount'] }}</td>
         <td>{{ transaction['Trans_Date'] }}</td>
         <td>{{ transaction['Trans_Type'] }}</td>
+        <td>{{ transaction['Trans_Company'] }}</td>
         <td>{{ transaction['Remark'] }}</td>
       </tr>
       {% endfor %}
@@ -121,7 +120,7 @@
                   <input list="user_data" type="text" class="form-control" id="newUserId" name="newUserId" />
                   <datalist id="user_data">
                     {% for user in user_data %}
-                    <option label="{{ user.User_Id + user.Local_Name }}" value="{{ user.User_Id }}"></option>
+                    <option label="{{ user.User_Name }}" value="{{ user.User_Id }}"></option>
                     {% endfor %}
                   </datalist>
                 </div>
@@ -180,7 +179,6 @@
     queryForm();
   }
 
-  // TODO 調整查詢總金額擊出入帳資訊
   function queryForm() {
     showLoading("查詢中", "");
     const userId = document.getElementById("userId").value;
@@ -209,9 +207,9 @@
         if (data.transDatas.Transactions.length > 0) {
           let content = `<div class="d-flex justify-content-between align-items-center mb-2"><h1>總金額: <span>${data.transDatas.total_Amount}</span></h1><button type="button" class="btn btn-secondary btn-lg" onclick="exportForm()">匯出</button></div>`;
           content +=
-            '<table class="table table-striped"><thead><tr><th>用戶名稱</th><th>交易金額</th><th>交易日期</th><th>交易類型</th><th>交易備註</th></tr></thead><tbody>';
+            '<table class="table table-striped"><thead><tr><th>用戶編號</th><th>用戶名稱</th><th>交易金額</th><th>交易日期</th><th>交易類型</th><th>交易公司</th><th>交易備註</th></tr></thead><tbody>';
           data.transDatas.Transactions.forEach((transaction) => {
-            content += `<tr><td>${transaction.User_Id}</td><td>${transaction.Trans_Amount}</td><td>${transaction.Trans_Date}</td><td>${transaction.Trans_Type}</td><td>${transaction.Remark}</td></tr>`;
+            content += `<tr><td>${transaction.User_Id}</td><td>${transaction.User_Name}</td><td>${transaction.Trans_Amount}</td><td>${transaction.Trans_Date}</td><td>${transaction.Trans_Type}</td><td>${transaction.Trans_Company}</td><td>${transaction.Remark}</td></tr>`;
           });
           content += "</tbody></table>";
           resultsDiv.innerHTML = content;

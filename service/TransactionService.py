@@ -13,9 +13,11 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
 
         sql = '''
             SELECT 
-                User_Id, 
+                User.User_Id, 
+                User_Name,
                 Trans_Amount, 
                 Trans_Date, 
+                Trans_Company,
                 CASE 
                     WHEN Trans_Type = 'I' THEN '入帳'
                     WHEN Trans_Type = 'O' THEN '回款'
@@ -24,6 +26,7 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
                 Remark
             FROM 
                 "Transaction"
+            JOIN User ON "Transaction".User_Id = User.User_Id
             WHERE 
                 1=1
         '''
@@ -55,7 +58,7 @@ def getData(userId=None, startDate=None, endDate=None, transType=None):
 
         return {
             'Transactions': Transactions,
-            'total_Amount': total_Amount
+            'total_Amount': f"{total_Amount:,.0f}"
         }
 
     except sqlite3.Error as e:
@@ -184,3 +187,5 @@ def getUserData():
     column_names = [description[0] for description in cursor.description]
 
     return [dict(zip(column_names, row)) for row in results]
+
+print(getData())
