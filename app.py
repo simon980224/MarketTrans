@@ -63,6 +63,36 @@ def UserMgr_append():
         return jsonify(success=True, message='新增成功'), 200
     except Exception as e:
         return jsonify(success=False, message=str(e)), 400
+    
+
+@app.route('/UserMgr/UserMgr_export', methods=['POST'])
+def UserMgr_export():
+    data = request.json
+    userId = data.get('userId', '').strip() or None
+
+    userDatas = userMgrService.getData(userId)
+
+    df = pd.DataFrame(userDatas)
+
+    columns = {
+        'User_Id': '用戶編號',
+        'User_Name': '用戶名稱',
+        'Line_Id': 'LINE_ID',
+        'Bank_Id': '銀行帳號'
+    }
+
+    df.rename(columns=columns, inplace=True)
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='UserMgr')
+
+    output.seek(0)
+
+    return send_file(output,
+                     as_attachment=True,
+                     download_name='UserMgr.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @app.route('/Transaction', methods=['GET', 'POST'])
