@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 
 # 統一管理資料庫位置
-DATABASE_PATH = 'Transaction.db'
+DATABASE_PATH = 'transaction.db'
 
 
 def getData(userId=None, startDate=None, endDate=None, transType=None):
@@ -187,5 +187,3 @@ def getUserData():
     column_names = [description[0] for description in cursor.description]
 
     return [dict(zip(column_names, row)) for row in results]
-
-print(getData())

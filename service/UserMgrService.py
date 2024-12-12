@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 
 # 統一管理資料庫位置
-DATABASE_PATH = 'Transaction.db'
+DATABASE_PATH = 'transaction.db'
 
 
 def getData(userId=None):
@@ -99,50 +99,6 @@ def addUser(userId, userName, lineId, bankId):
         if conn:
             conn.close()
 
-
-# def getNewTransId():
-#     try:
-#         # 連接到 SQLite 資料庫
-#         conn = sqlite3.connect(DATABASE_PATH)
-#         cursor = conn.cursor()
-
-#         today = datetime.now()
-#         year = today.year % 100  # 取得年份的後兩位
-#         month = today.month
-#         day = today.day
-
-#         # 格式化日期部分
-#         date_part = f"{year:02}{month:02}{day:02}"
-
-#         # 查詢當日最大交易編號
-#         cursor.execute("""
-#             SELECT Trans_Id FROM TransRequests 
-#             WHERE Trans_Id LIKE ? 
-#             ORDER BY Trans_Id DESC 
-#             LIMIT 1
-#         """, (f"{date_part}%",))
-#         result = cursor.fetchone()
-
-#         if result:
-#             # 解析出編號部分，並遞增
-#             last_id = result[0]
-#             last_number = int(last_id.split('_')[1])
-#             next_number = last_number + 1
-#         else:
-#             # 如果沒有當天的交易，從1開始
-#             next_number = 1
-
-#         # 返回新的交易編號，並在前面加上 "req"
-#         return f"req_{date_part}_{next_number:03}"
-
-#     except sqlite3.Error as e:
-#         print(f"An error occurred: {e}")
-
-#     finally:
-#         if cursor:
-#             cursor.close()
-#         if conn:
-#             conn.close()
 
 def getNewUserId():
     try:

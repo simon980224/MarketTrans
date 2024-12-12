@@ -1,19 +1,15 @@
+from datetime import datetime
 from io import BytesIO
 import os
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file, abort
 
-from Service import userMgrService,transactionService
+from Service import userMgrService,transactionService,lineBotService
 
 # LINE Bot SDK 的相關匯入
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import (
-    MessageEvent,
-    TextMessage,
-    TextSendMessage,
-    # 根據需要添加其他模型
-)
+from linebot.models import MessageEvent,TextMessage,TextSendMessage
 
 
 # 從環境變量中讀取憑證
@@ -185,9 +181,10 @@ def Api():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    response_text = ''
     user_message = event.message.text.strip()
     user_id = event.source.user_id
-    # app.logger.info(f"Received message from user {user_id}: {user_message}")
+    event_time = datetime.fromtimestamp(event.timestamp / 1000.0).strftime('%Y-%m-%d %H:%M:%S')
 
     if user_message == '/測試':
         response_text = f"你好"
@@ -210,6 +207,8 @@ def handle_message(event):
                 response_text += "-" * 25 + "\n"
         else:
             response_text = "沒有找到任何交易明細。"
+
+    lineBotService.insert_data(user_id, user_message, event_time)
 
     line_bot_api.reply_message(
         event.reply_token,
