@@ -181,7 +181,7 @@ def Api():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    response_text = ''
+    response_text = None
     user_message = event.message.text.strip()
     user_id = event.source.user_id
     event_time = datetime.fromtimestamp(event.timestamp / 1000.0).strftime('%Y-%m-%d %H:%M:%S')
@@ -208,12 +208,18 @@ def handle_message(event):
         else:
             response_text = "沒有找到任何交易明細。"
 
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=response_text)
+        )
+
     lineBotService.insert_data(user_id, user_message, event_time)
 
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=response_text)
-    )
+    if response_text:
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=response_text)
+        )
 
 
 if __name__ == '__main__':
